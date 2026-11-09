@@ -10,7 +10,7 @@ consequential trust decisions or deploy this system to mainnet without review an
 
 ## Private reporting
 
-Use [GitHub private security advisories](https://github.com/zadworny/doublecheck/security/advisories/new).
+Use [GitHub private security advisories](https://github.com/ohMySol/doublecheck/security/advisories/new).
 Do not open a public issue for an exploitable weakness or include real identity/complaint data in a
 report.
 

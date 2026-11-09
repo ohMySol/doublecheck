@@ -2,9 +2,7 @@
 
 **Date:** 10 August 2026
 
-**Repository:** `github.com/zadworny/doublecheck`
-
-**Working directory reviewed:** `/Users/samzadworny/github/doublecheck`
+**Repository:** `github.com/ohMySol/doublecheck`
 
 **Product input:** `Verified-Recruiter-Badge-Plan.pdf` (10 pages)
 

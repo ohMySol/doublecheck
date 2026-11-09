@@ -35,7 +35,7 @@ authorisation rule, and function signature.
 | Toolchain | Rust 1.96 · `soroban-sdk` 27.0.5 · target `wasm32v1-none` · `stellar-cli` |
 | Contract tests | 59, deterministic, snapshot-backed |
 | Live app | <https://doublecheck-lime.vercel.app> |
-| Source | <https://github.com/zadworny/doublecheck> — [`SC/`](../SC/) contract, [`FE/`](../FE/) verifier |
+| Source | <https://github.com/ohMySol/doublecheck> — [`SC/`](../SC/) contract, [`FE/`](../FE/) verifier |
 | Docs | <https://doublecheck.gitbook.io/doublecheck/> |
 
 Companion documents: [current-state architecture](architecture.md) · [contract interface](../SC/README.md) ·
