@@ -34,7 +34,7 @@ authorisation rule, and function signature.
 | Upgrade tx | [`b0aaf6f…`](https://stellar.expert/explorer/testnet/tx/b0aaf6f31e942e619b393505f90f15d57c73404e2707bf688b5d3f56758b7940) — in-place upgrade, 10 Aug 2026, 5 entities and 8 claims preserved |
 | Toolchain | Rust 1.96 · `soroban-sdk` 27.0.5 · target `wasm32v1-none` · `stellar-cli` |
 | Contract tests | 59, deterministic, snapshot-backed |
-| Live app | <https://doublecheck-lime.vercel.app> |
+| Live app | <https://doublecheck-six.vercel.app> |
 | Source | <https://github.com/ohMySol/doublecheck> — [`SC/`](../SC/) contract, [`FE/`](../FE/) verifier |
 | Docs | <https://doublecheck.gitbook.io/doublecheck/> |
 
@@ -374,7 +374,7 @@ The contract then records **who signed** rather than what the caller claimed:
 | global admin or issuer | `IssuerConfirmed` | authorises |
 
 `IssuerConfirmed` is the commercial unlock: it onboards a hiring company that has no wallet and no
-intention of getting one — DoubleCheck verifies the domain/KYB out of band and signs. It is a
+intention of getting one — DoubleCheck verifies the domain/KYB out of band and signs (see *Company root of trust* below). It is a
 *distinguishable* tier, so a reader can see the difference, and the admin cannot make its own
 statement look counterparty-confirmed.
 
@@ -392,6 +392,56 @@ Terminal states are terminal: `Revoked` (entity), `Ended`/`Withdrawn` (relations
 `Completed`/`Withdrawn` (mandate). A renewed assertion is a **new claim**, never a silent
 resurrection of an old one. Pause blocks new onboarding and new claims while leaving every takedown
 path open — an emergency stop must never be a way to prevent a revocation.
+
+### Company root of trust · LIVE (manual issuer check) + BUILD (control proof)
+
+A contract can verify that a key signed; it cannot know that the key belongs to a company. The root
+of trust is therefore not on-chain. It is the combination of **what the organisation proves it
+controls** and **what the issuer checks before signing**, and the chain records only the result and
+who vouched for it.
+
+**How an entity proves control of the company it claims.** The organisation publishes a signed
+challenge on the domain it claims, as a DNS TXT record or a file at a well-known path. The challenge
+binds four things: the domain, the Stellar network and registry contract, the controller address
+that will accept the badge, and an issuer-supplied nonce with an expiry. It is signed by that
+controller key (a `G…` account or a passkey `C…` account), so it proves control of the domain and of
+the key in one step and cannot be replayed for another controller or network. The exact record name
+and payload format are fixed in the published issuer policy (Tranche 1, D1).
+
+**What the issuer verifies before it signs.**
+
+| Check | What the issuer confirms | Where it is recorded |
+|---|---|---|
+| Domain control | the signed challenge is present, unexpired, bound to the right controller, network and contract, and verifies | case store (evidence stays off-chain) |
+| Registry evidence | the legal entity, jurisdiction and status match an official company register or equivalent evidence | case store |
+| Signatory authority | the person enrolling the controller is actually entitled to act for the company | case store |
+| Policy | the decision follows the published issuer policy and its assurance level; high-risk decisions get dual approval (§10) | case store, reason codes, policy version |
+
+**What reaches the chain.** Only after those checks does the issuer call `propose_entity` carrying
+hashes. The organisation's controller then signs `accept_entity` against the named terms hash
+(§3.1), and the badge is recorded as `IssuerConfirmed` with the issuing address stored on the record
+(§4 above). Evidence, reviewer notes and the challenge itself stay off-chain (§10); the public can
+see who confirmed, when, until when, and against which terms hash, not the evidence.
+
+**What this does and does not guarantee.**
+
+- The contract enforces who may sign. It does not fetch DNS or read a company register. The control
+  proof is enforced by the issuer's console and policy, which is why the policy is published and why
+  each badge stores its issuer: a reader can see exactly whose check they are relying on.
+- An organisation with no valid control proof is never proposed or confirmed by a compliant issuer,
+  and an account without the issuer or controller role fails `require_auth` when it tries to issue an
+  attestation. Both are covered by automated tests in Tranche 1, D1.
+- Domain control is not signatory authority. The two are checked separately and never collapsed into
+  one claim.
+- A check performed only by DoubleCheck is `IssuerConfirmed`, never `CounterpartyConfirmed` (§10).
+  Other issuers can run their own policy under the same rule, which is how "multi-issuer by design" is
+  kept honest.
+- Control is time-bound. The proof is re-checked at renewal, and loss of domain control is grounds
+  for the stored issuer to revoke or suspend, which keeps every takedown path open (§4, terminal
+  states).
+- Today the KYB and domain check is a manual issuer process. The challenge, its verification in the
+  console and the published policy are grant scope (§13, Tranche 1 D1); manual KYB tooling such as an
+  evidence vault and reviewer console is a later item (§10).
 
 ---
 
@@ -1233,7 +1283,7 @@ rather than asserted, and it is a gate on the final milestone.
 | Homograph / control-character spoofing in public text | handle charset restriction, reserved product routes, control-character rejection (`Error::InvalidText`) | LIVE |
 | RPC endpoint lies to a reader | contract id and network are public; any independent RPC returns the same state; the API labels indexed vs chain-read results | LIVE |
 
-Not covered, and named rather than hidden: no independent production audit yet; public RPC
+Not covered, and named rather than hidden: no independent review has taken place yet; public RPC
 availability is a real dependency; on-chain free text may constitute personal employment data; and a
 compromised device passkey with a full-scope signer can act as the holder until rotation.
 
@@ -1241,20 +1291,198 @@ compromised device passkey with a full-scope signer can act as the holder until 
 
 ## 13. Grant delivery plan
 
-| # | Deliverable | Substance | Evidence at completion |
-|---|---|---|---|
-| 1 | Passkey onboarding | Passkey Kit integration, `C…` controllers end-to-end, multi-passkey + ed25519 recovery, policy-signer scoping | testnet demo: badge accepted from a phone with no wallet install |
-| 2 | Sponsored submission | Launchtube path + self-hosted OpenZeppelin Relayer fallback, per-organisation and per-subject rate limits, allowlisted invocation trees, resource-fee audit log, balance alerting | holder write with zero XLM; documented refuse/delay-only failure modes |
-| 3 | Wallets Kit console | `@creit-tech/stellar-wallets-kit` replacing the Freighter-only path (Freighter + xBull focus); issuer/arbiter consoles with plain-language statement review and final-ledger confirmation | full issuer lifecycle driven from the browser |
-| 4 | Governance hardening | migration to OZ `stellar-access` / `stellar-contract-utils` / `stellar-governance` / `stellar-accounts`; two role planes; 2-of-3 custody; timelocked upgrade with public `pending_upgrade`; Protocol 27 delegated multi-signer approval | upgraded contract + separation-of-duties runbook + signing-ceremony doc |
-| 5 | Indexer, reconciler, API | `getEvents` live path **plus** Galexie/ingest-SDK backfill, idempotent `(ledger_seq, tx_index, event_index)` ingestion, Postgres projections, status history, drift alerting, staleness labelling | full-registry browse with no linear scan; deliberate-drift test passing |
-| 6 | TTL service | scheduled `keepalive` to `done`, per-entry TTL monitoring, minimum-TTL-across-estate metric, operator-submitted restores for the wallet-free read path, rent metrics | dashboard + a restored-entry demonstration |
-| 7 | Credential and commitment layer | salted commitments (§9.0) with published canonicalisation test vectors; VC 2.0 issuance, `did:web` issuer + `did:pkh` subject, Data Integrity proof verification in-browser, status list cross-checked against chain | verifier distinguishing "hash matches" from "proof verified"; no new cleartext personal data on chain |
-| 8 | SEP-10 + SEP-45 auth | both flows, `stellar.toml` publication, short-lived JWTs, isolated SEP-45 module pending spec finalisation | authenticated console session from both a `G…` and a `C…` account |
-| 9 | Audit, reproducibility and mainnet gate | independent Soroban + frontend audit with findings resolved; SEP-58 reproducible build published; DPIA and policy set published; second-operator deployment reproduced from public docs | audit report + rebuilt-hash match + independent test deployment + mainnet record |
+This is the deliverable roadmap submitted to the Stellar Community Fund: three tranches, eight
+deliverables, $74,100 in total. The registry contract and the public verifier are already live on
+Stellar testnet and are not billed; the grant funds the work below. Dates assume the project starts
+on 1 March 2027.
 
-Milestones 1–3 are the adoption unlock, 4–6 are the operations unlock, 7–9 are the mainnet gate. They
-are independently shippable and each ends in something checkable on a public network.
+| Tranche | Deliverable | Date | Budget |
+|---|---|---|---|
+| 1 · MVP | D1 Company root of trust and wallet-connected issuer console | 26 March 2027 | $8,600 |
+| 1 · MVP | D2 Passkey accounts and sponsored Soroban transactions | 9 April 2027 | $8,100 |
+| 2 · Testnet | D1 Contract governance, registry indexer, public API, SDK and public metrics | 7 May 2027 | $11,400 |
+| 2 · Testnet | D2 Soroban TTL keeper and restoration service | 21 May 2027 | $6,300 |
+| 2 · Testnet | D3 Signed credential and commitment layer | 28 May 2027 | $7,700 |
+| 3 · Mainnet | D1 Production hardening, custody and operational readiness | 18 June 2027 | $10,200 |
+| 3 · Mainnet | D2 Open-source v1.0 and reproducible deployment | 25 June 2027 | $8,400 |
+| 3 · Mainnet | D3 Mainnet launch, Jobited issuance floor and user acceptance testing | 2 July 2027 | $13,400 |
+| | **Total** | | **$74,100** |
+
+### Tranche 1 (Deliverable Roadmap) — MVP · $16,700
+
+Context: the registry contract and the public verifier are live on Stellar testnet and are not
+billed. This tranche adds the company root of trust, the browser-based issuer console, passkey
+accounts and sponsored submission.
+
+#### Deliverable 1. Company root of trust and wallet-connected issuer console
+
+**Description.** Implement the company control proof: the organisation publishes a signed challenge
+on its domain (DNS TXT record or well-known file), the issuer checks it together with registry
+evidence under a published issuer policy, and only then can the entity reach the issuer-confirmed
+level on-chain. Integrate Stellar Wallets Kit into the issuer and organisation administrator console
+(Freighter, xBull) and run the full lifecycle against the deployed contract: entity proposal and
+acceptance, administrator enrolment, relationship attestation, subject-approved publication, mandate
+issuance and withdrawal, public verification through Soroban RPC.
+
+**How to measure completion.** The issuer policy and the control-proof procedure are published in
+the repository. A recorded public testnet demonstration shows an organisation proving domain control
+and being confirmed, then the lifecycle from entity proposal through relationship and mandate
+withdrawal. An organisation without a valid control proof cannot reach the issuer-confirmed level,
+and an unauthorised account fails to issue an attestation, both covered by automated tests. Before
+signing, every write displays the contract action and arguments in plain language; the console
+simulates, signs, submits and confirms final ledger inclusion. The public verifier reads contract
+state through Soroban RPC and reflects withdrawal or expiry without a separate synchronisation
+transaction.
+
+**Estimated date of completion:** 26 March 2027 · **Budget:** $8,600
+
+#### Deliverable 2. Passkey accounts and sponsored Soroban transactions
+
+**Description.** Integrate maintained Stellar passkey smart-account tooling, e.g. Passkey Kit, behind
+an internal adapter. Individuals control their DoubleCheck identity through a passkey-controlled
+Soroban account using native secp256r1 verification. Add sponsored submission through a Stellar
+relayer, e.g. OpenZeppelin Relayer, limited to contract calls authorised by the user, with
+per-organisation and per-subject rate limits and a published subsidy cap.
+
+**How to measure completion.** A recorded public testnet demonstration shows a user creating a
+passkey-controlled account and accepting an entity proposal from a browser with no wallet extension,
+an account holding no XLM and no XLM paid by the user. Source code, deployed addresses and
+transaction IDs are published. Automated tests reject modified, expired, replayed and disallowed
+authorisations and show that the relayer cannot change the authorised contract, function, arguments
+or invocation tree. Relayer refusal, rate-limit and subsidy-cap paths are covered in CI. The
+application reports success only after final ledger inclusion.
+
+**Estimated date of completion:** 9 April 2027 · **Budget:** $8,100
+
+### Tranche 2 (Deliverable Roadmap) — Testnet · $25,400
+
+#### Deliverable 1. Contract governance, registry indexer, public API, SDK and public metrics
+
+**Description.** Upgrade the testnet registry with OpenZeppelin stellar-contracts modules for
+role-based access control, pausing and upgradeability. Separate protocol administrator, arbiter,
+pauser and upgrade authorities from organisation-scoped permissions; sensitive upgrades require a
+2-of-3 Stellar account and emit a public upgrade event. Build a registry event indexer consuming
+contract events through Stellar RPC with a persisted cursor and an append-only event log, a
+reconciler that compares projections with contract state and marks divergent records stale, a
+documented public API plus TypeScript SDK for entities, relationships, mandates and status history,
+and a public metrics page (verified companies, confirmed relationships, active mandates, renewals)
+fed by the indexer. This deliverable also publishes the threat model (STRIDE) and the monitoring
+plan.
+
+**How to measure completion.** The upgraded contract is live on testnet with tagged source, contract
+address, WASM hash and upgrade transaction published; existing records remain readable. Automated
+tests demonstrate role separation, 2-of-3 approval for sensitive actions, rejection of unauthorised
+calls, emergency pause with withdrawal and revocation still working, and publication of upgrade
+events. From the bootstrap snapshot and the event log, the indexer rebuilds the same state as direct
+contract reads; restart and replay tests produce no gaps or duplicates; a deliberately modified
+projection is detected and marked stale. The API, SDK and metrics page are published, with indexed
+results distinguished from direct contract reads. Threat model and monitoring plan are published in
+the repository.
+
+**Estimated date of completion:** 7 May 2027 · **Budget:** $11,400
+
+#### Deliverable 2. Soroban TTL keeper and restoration service
+
+**Description.** An off-chain keeper monitors the registry contract code, instance and tracked
+persistent entries and submits permissionless TTL-extension transactions before archival. When an
+archived entry is needed for public verification, an operator-funded service submits the restoration
+transaction and retries the verification. The keeper holds no privileged registry role. Rent and
+keepalive costs per entry are measured and published, so the keeper economics are visible.
+
+**How to measure completion.** A recorded public testnet demonstration shows the keeper identifying
+entries within its extension window and submitting a successful TTL-extension transaction, with
+transaction IDs, outcomes, latest run, failed submissions and minimum remaining TTL visible in
+operational monitoring. A reproducible integration test advances a persistent record beyond its TTL,
+restores it through the operator-funded path and verifies it again without a wallet or XLM on the
+reader side. Tests cover interrupted runs, repeated execution and failed submissions. Measured
+per-entry rent and keepalive costs are published in the repository.
+
+**Estimated date of completion:** 21 May 2027 · **Budget:** $6,300
+
+#### Deliverable 3. Signed credential and commitment layer
+
+**Description.** Replace cleartext relationship and mandate details in new ledger writes with salted
+cryptographic commitments; claim content and salts stay off-chain. Publish claim schemas,
+canonicalisation rules, commitment format and test vectors. Issue W3C Verifiable Credentials 2.0
+secured with JOSE from an HTTPS issuer identifier with a published verification key; each credential
+carries an opaque subject identifier, the Stellar network, the controller address accepted on-chain,
+the claim identifier, validity and the salt needed to verify the commitment. The public verifier
+validates the issuer signature, reproduces the commitment and reads current status from Soroban.
+
+**How to measure completion.** Versioned schemas, issuer verification information, canonicalisation
+rules, test vectors and example credentials are published. A standalone reference script reproduces
+the on-chain commitment without importing DoubleCheck application code. The verifier accepts a valid
+credential and rejects modified content, invalid or unknown issuer signature, wrong controller
+address, expired credential, withdrawn claim or commitment mismatch, reporting signature, commitment
+and Soroban status as separate results. Inspection of newly written entries confirms no cleartext
+claim text or salt on-chain; historical entries are explicitly out of scope because they cannot be
+removed.
+
+**Estimated date of completion:** 28 May 2027 · **Budget:** $7,700
+
+### Tranche 3 (Deliverable Roadmap) — Mainnet · $32,000
+
+#### Deliverable 1. Production hardening, custody and operational readiness
+
+**Description.** Prepare the release candidate and the production environment. Separately controlled
+keys for upgrade, issuer, arbiter, pauser, relayer and keeper operations, 2-of-3 custody for
+upgrades, hardened secrets, configurable RPC and relayer providers, monitoring of service health,
+ledger progress, reconciler drift, failed submissions, operational balances and TTL durability.
+Runbooks for incident response, recovery, key rotation, deployment and rollback. Static analysis,
+dependency checks, integration and failure-path tests across contracts and services, with findings
+from the published threat model resolved. SECURITY.md names the independent review milestone and its
+date before mainnet issuance.
+
+**How to measure completion.** Production-equivalent testnet exercises cover 2-of-3 approval, signer
+rotation, upgrade authorisation and recovery, emergency pause and recovery, relayer failure, RPC
+provider failure, index reconstruction and archived-entry restoration, each with a recorded run and
+transaction IDs. Monitoring alerts are demonstrated for projection drift, failed submissions, low
+operational balances and low TTL headroom. Deployment configuration is version-controlled without
+production secrets. All threat-model items rated high or above have a documented, tested mitigation.
+SECURITY.md is updated with the dated independent review milestone.
+
+**Estimated date of completion:** 18 June 2027 · **Budget:** $10,200
+
+#### Deliverable 2. Open-source v1.0 and reproducible deployment
+
+**Description.** Tagged v1.0 release under a permissive licence: registry contract, event and
+credential schemas, generated bindings, reference indexer and reconciler, OpenAPI description,
+TypeScript SDK, verifier, administrator console, passkey components, deployment configuration,
+operational documentation and contribution guide. A reproducible build manifest pins the build
+environment, source commit, locked dependencies, build commands and expected WASM hash.
+
+**How to measure completion.** Tagged release, source archives, build instructions and WASM hashes
+are published; a clean CI build with the pinned environment reproduces the released WASM hash. From a
+clean environment and a separate team-controlled operator account, the published instructions deploy
+a fresh testnet instance and complete the documented verification lifecycle without unpublished
+steps or credentials. Contract, API, SDK, credential and end-to-end test suites pass against that
+deployment in CI.
+
+**Estimated date of completion:** 25 June 2027 · **Budget:** $8,400
+
+#### Deliverable 3. Mainnet launch, Jobited issuance floor and user acceptance testing
+
+**Description.** Deploy the tagged release to Stellar mainnet and activate the production registry,
+passkey onboarding, sponsored submission, issuer console, public verifier, indexer, TTL service,
+public API, SDK, credential service, embeddable badge and public metrics page. Jobited operates as
+the first production issuer under the published issuer policy and issues a committed floor from its
+existing client base: at least [TEAM: n] verified companies, [TEAM: n] confirmed relationships and
+[TEAM: n] mandates. A technical onboarding package is available for pilot organisations; their
+participation is not a completion condition. Document production data-handling, retention, deletion,
+correction and dispute procedures for off-chain information.
+
+**How to measure completion.** Mainnet contract address, deployment transactions, tagged source,
+deployed WASM hash, build manifest, and network and governance configuration are published, and the
+deployed WASM matches the v1.0 artifact. A recorded mainnet demonstration with controlled records
+completes entity acceptance, administrator enrolment, relationship publication, subject consent,
+mandate issuance, credential verification and withdrawal, with the verifier distinguishing current
+from past representation and stating when a former representative has no current authority. Public
+verification requires no wallet, login or XLM. The Jobited issuance floor is reached and visible on
+the public metrics page, with the corresponding mainnet transactions linked. User acceptance testing
+across issuer administration, passkey subject flows and wallet-free verification is documented and
+launch-blocking findings are resolved and regression-tested. This is the final project deliverable.
+
+**Estimated date of completion:** 2 July 2027 · **Budget:** $13,400
 
 ---
 
@@ -1268,13 +1496,13 @@ These are deliberately listed rather than papered over. Each is a decision, not 
    the ledger regardless — so the only cheap moment is before a founding cohort exists. The
    recommendation is to do it in the next contract version rather than after mainnet.
 2. **Timelock duration.** 7 days balances warning against incident response. 48 hours is defensible
-   for a pre-audit testnet; 7 days is the target for mainnet.
+   for an unreviewed testnet; 7 days is the target for mainnet.
 3. **Sponsorship economics.** Who pays holder writes at scale, and what the per-subject cap is before
    a write becomes user-paid.
 4. **SEP-45 timing.** It is a Draft. Ship behind an interface now, or wait for Final and accept that
    passkey users have no standard session auth in the interim.
 5. **Selective disclosure.** Which verifier use case justifies it first — and it ships only with an
-   audited suite.
+   independently reviewed suite.
 6. **RPC dependency.** Public endpoint, paid provider, or self-hosted — an availability decision the
    read path's integrity does not depend on, but its uptime does.
 
@@ -1319,5 +1547,5 @@ These are deliberately listed rather than papered over. Each is a decision, not 
 ---
 
 *Last updated 13 August 2026. Contract, Wasm hash and network state in §0 are verifiable on Stellar
-testnet at the time of writing. Nothing in this document should be read as a claim of an audited
-production release; see [`roadmap.md`](roadmap.md) for the mainnet gates.*
+testnet at the time of writing. Nothing in this document should be read as a claim of an independently
+reviewed production release; see [`roadmap.md`](roadmap.md) for the mainnet gates.*

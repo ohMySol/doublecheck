@@ -69,7 +69,7 @@ specification. This is still testnet, not an audited production release.
 
 | Resource | Value |
 |---|---|
-| Hosted explorer | <https://doublecheck-lime.vercel.app> |
+| Hosted explorer | <https://doublecheck-six.vercel.app> |
 | vNext testnet contract | `CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP` |
 | Wasm SHA-256 | `1ab20ff8c30b0f704b64dee4aed5d1dd111e5b24e33fb612ef9309aef5dc895a` |
 | Contract explorer | [stellar.expert](https://stellar.expert/explorer/testnet/contract/CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP) |
