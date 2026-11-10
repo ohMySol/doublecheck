@@ -2,11 +2,18 @@
 
 ## Status
 
-**DoubleCheck has not received an independent production security audit.** The repository is
+**DoubleCheck has not yet had an independent security review.** The repository is
 pre-production. The public Stellar testnet contract was upgraded to the reviewed vNext candidate on
 10 August 2026 and the frontend binding was regenerated from its live specification, but testnet
 deployment does not prove safe human verification operations. Do not use testnet records for
 consequential trust decisions or deploy this system to mainnet without review and operational controls.
+
+## Independent review
+
+An independent review of the contract and frontend is planned through the SCF review programme and
+is scheduled before the mainnet launch deliverable (Tranche 3, Deliverable 3, April 2027). Until it
+has been completed, treat the contract and frontend as not independently reviewed. This section will
+be updated with the review's date and outcome.
 
 ## Private reporting
 
@@ -75,8 +82,8 @@ Use private reporting when uncertain; do not publish personal allegations.
 - The global admin can propose new badges, write issuer-confirmed claims, change the arbiter,
   pause, and upgrade. Each accepted badge permanently records its issuer; only that stored issuer
   may later replace its credential anchor, renew or revoke it, approve controller recovery, or use
-  the issuer side of its lifecycle. Both roles require production custody, policy, and audit
-  controls.
+  the issuer side of its lifecycle. Both roles require production custody, policy, and
+  logging controls.
 - The arbiter can record disputes/suspensions/strikes within its constrained role.
 - A funded keeper may call permissionless `keepalive`; it cannot change business status.
 - The private review operation decides whether evidence is sufficient. The contract proves the
@@ -88,7 +95,8 @@ A bug that expands any of those powers or misattributes their outcome is in scop
 
 Please check [`docs/roadmap.md`](docs/roadmap.md) before reporting these as new findings:
 
-- the public vNext deployment remains unaudited testnet infrastructure with demonstration records;
+- the public vNext deployment remains testnet infrastructure with demonstration records and has not been independently
+  reviewed;
 - general per-entity history indexes cap at 512 ids and can omit later records from browser
   discovery, although every record is stored and event-emitted; strict authorisation uses a
   separate 64-entry confirmed-pair index and 128-record strict scan budget; it rejects new relevant

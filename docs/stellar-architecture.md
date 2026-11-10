@@ -27,12 +27,12 @@ authorisation rule, and function signature.
 
 | Item | Value |
 |---|---|
-| Chain | Stellar, Soroban, protocol 27 |
+| Chain | Stellar, Soroban, protocol 29 (live on mainnet since 1 October 2026) |
 | Contract | `CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP` ([stellar.expert](https://stellar.expert/explorer/testnet/contract/CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP)) |
 | Wasm SHA-256 | `1ab20ff8c30b0f704b64dee4aed5d1dd111e5b24e33fb612ef9309aef5dc895a` |
 | Wasm size | 60,131 bytes optimised, against the 131,072-byte network limit |
 | Upgrade tx | [`b0aaf6f…`](https://stellar.expert/explorer/testnet/tx/b0aaf6f31e942e619b393505f90f15d57c73404e2707bf688b5d3f56758b7940) — in-place upgrade, 10 Aug 2026, 5 entities and 8 claims preserved |
-| Toolchain | Rust 1.96 · `soroban-sdk` 27.0.5 · target `wasm32v1-none` · `stellar-cli` |
+| Toolchain | Rust 1.96 · `soroban-sdk` 27.0.5 in the current build (29.x is the current stable line, matching protocol 29; the move is planned with the next contract version) · target `wasm32v1-none` · `stellar-cli` |
 | Contract tests | 59, deterministic, snapshot-backed |
 | Live app | <https://doublecheck-six.vercel.app> |
 | Source | <https://github.com/ohMySol/doublecheck> — [`SC/`](../SC/) contract, [`FE/`](../FE/) verifier |
@@ -75,7 +75,7 @@ what its status is right now. Five Stellar properties make that practical rather
 
 **Signature-payload forward compatibility.** New work builds against
 `SOROBAN_CREDENTIALS_ADDRESS_V2` (CAP-0071-02), whose payload is address-bound, rather than the
-legacy V1 credential that is replaced at Protocol 28. This closes a cross-account signature-replay
+legacy V1 credential, which Protocol 28 replaced. This closes a cross-account signature-replay
 class by construction and avoids a forced migration later.
 
 What Stellar does not give us, and what this design therefore has to supply itself:
@@ -109,7 +109,7 @@ flowchart TB
         IDX["Indexer + reconciler<br/>getEvents cursor -> Postgres"]
         API["Read API + status history"]
         INT["/api/intake<br/>strict-shape webhook bridge"]
-        LT["Sponsor / relayer<br/>Launchtube or self-hosted"]
+        LT["Sponsor / relayer<br/>OpenZeppelin Relayer"]
     end
 
     subgraph Chain["Stellar network"]
@@ -193,7 +193,7 @@ pub struct PendingEntity {
 | `cancel_entity_proposal(caller, id)` | issuer **or** controller; any address once `accept_by` has passed | releases handle and controller reservation |
 | `get_pending_entity`, `get_pending_entity_by_controller` | none (read) | lets the controller find its own offer without an id |
 
-Why this matters for a trust product: an audit of `EntityProposed` → `EntityAccepted` pairs proves
+Why this matters for a trust product: an independent review of `EntityProposed` → `EntityAccepted` pairs proves
 that every live badge was **accepted by its subject against a named terms hash**, on-chain, before it
 became public. No issuer can manufacture a verified identity for someone who never agreed.
 
@@ -351,7 +351,7 @@ strongest verdict. A UI-derived check is never treated as proof.
 |---|---|
 | Atomicity | `accept_entity` writes the entity, handle index, controller index and clears three proposal keys in one invocation. Cross-contract that is a multi-call saga with partial-failure states. |
 | Read cost | `is_authorised` touches the mandate, its relationship and both entities. Same-contract storage reads stay inside one footprint; cross-contract adds invocation overhead against the same ledger-footprint ceiling. |
-| Auth surface | Every cross-contract boundary is a place to get `require_auth` wrong. Four boundaries is four audit surfaces. |
+| Auth surface | Every cross-contract boundary is a place to get `require_auth` wrong. Four boundaries is four surfaces for independent review. |
 | Size budget | 60,131 of 131,072 bytes used. There is no size pressure forcing a split. |
 
 The registries are separated by `DataKey` variant, id space and lifecycle instead — which gives the
@@ -643,7 +643,7 @@ re-ingestion — after a crash, a replay, or an overlapping backfill — is a no
 duplicate. This is what makes path 2 safe to run against a live path 1.
 
 **Storage.** Two layers: an append-only `events` table (ledger, tx hash, event index, topics, body
-JSON) which is the audit log and replay source, and derived projections (`entities`,
+JSON) which is the event log and replay source, and derived projections (`entities`,
 `relationships`, `mandates`, `status_history`) rebuilt by replaying `events` from zero. Every
 projection row carries `last_event_ledger` so staleness is visible in the API response rather than
 hidden.
@@ -827,11 +827,11 @@ separates *who may sign* (signers), *what they may do* (context rules) and *how 
 |---|---|
 | read-only console views | no signature |
 | propose a relationship, draft a mandate | 1 admin passkey |
-| activate/end a relationship, activate/withdraw a mandate | 1 admin passkey — alerted and audit-logged |
+| activate/end a relationship, activate/withdraw a mandate | 1 admin passkey — alerted and logged |
 | add or remove an admin, rotate the organisation key, change the organisation's registry controller | **2-of-3 multisig policy** |
 
 The bottom row is the one that stops a single compromised laptop from handing a company's
-representation authority to an attacker. Under Protocol 27 those two-of-three signatures bundle
+representation authority to an attacker. Since Protocol 27 (mainnet is now on Protocol 29) those two-of-three signatures bundle
 through `delegate_account_auth` into one `SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES` entry: one
 transaction, one nonce, one simulation. Before Zipper this pattern cost an authorization entry per
 signer and was the reason most projects quietly settled for a single admin key.
@@ -843,16 +843,17 @@ interchangeable.
 
 | Mechanism | Solves | Where used |
 |---|---|---|
-| **Relayed submission** ([Launchtube](https://github.com/stellar/launchtube) or [OpenZeppelin Relayer](https://github.com/OpenZeppelin/openzeppelin-relayer)) | contract-account user has no XLM and no sequence number | passkey holder writes |
+| **Relayed submission** ([OpenZeppelin Relayer](https://github.com/OpenZeppelin/openzeppelin-relayer)) | contract-account user has no XLM and no sequence number | passkey holder writes |
 | **Fee-bump transaction** (CAP-15) | classic `G…` user has an account but no XLM for fees | expert/legacy holder writes |
 | **Sponsored reserves** (CAP-33, `begin/endSponsoringFutureReserves`) | classic account creation and its base reserve | only where a `G…` account must exist at all |
 
 **No end user ever needs XLM.** The platform's transaction service builds the invocation, simulates
 it through RPC (which also populates any restore list, §5.4), then submits it with a platform fee
-source. Default path: [Launchtube](https://github.com/stellar/launchtube), the SDF-operated service
-that accepts a signed Soroban transaction or auth entry and handles fee and sequence. Fallback and
-mainnet-grade path: a self-hosted [OpenZeppelin Relayer](https://github.com/OpenZeppelin/openzeppelin-relayer)
-holding a funded submitter account. Both sit behind one interface so they are swappable, and
+source. Default path: [OpenZeppelin Relayer](https://github.com/OpenZeppelin/openzeppelin-relayer),
+which accepts a signed Soroban transaction or auth entry and handles fee and sequence; the
+mainnet-grade configuration is a self-hosted instance holding a funded submitter account.
+Launchtube is not used, because its repository is archived. The relayer sits behind one interface so
+it stays swappable, and
 [`stellar-fee-abstraction`](https://crates.io/crates/stellar-fee-abstraction) is the contract-side
 option if fee payment ever needs to be expressed on-chain rather than in the relayer.
 
@@ -872,7 +873,7 @@ acceptable in a system whose entire value is that nobody can rewrite a trust dec
 
 Additional controls: rate limits **per organisation and per subject**, an allowlist restricted to the
 registry contract id and the holder-callable function set, refusal of any invocation tree touching
-admin functions, and a funded-balance alert. Every sponsored invocation is written to the audit log
+admin functions, and a funded-balance alert. Every sponsored invocation is written to the operations log
 **with its resource fee**, so sponsor abuse is a visible, bounded and costed line item rather than a
 surprise at the end of the month.
 
@@ -904,14 +905,14 @@ own Soroban signature over its own invocation. A stolen session token cannot wri
 
 Current state is honest but not mainnet-grade: hand-rolled `Admin`/`Arbiter`/`Paused` keys, a
 two-step admin handover, and an immediate `upgrade(wasm_hash)`. Grant scope replaces the hand-rolled
-parts with audited library code and adds the two controls a trust registry must have — **distributed
+parts with independently reviewed library code and adds the two controls a trust registry must have — **distributed
 custody** and **a delay before the code can change**.
 
 ### 8.1 OpenZeppelin `stellar-contracts`
 
-[OpenZeppelin's Stellar library](https://github.com/OpenZeppelin/stellar-contracts) is audited and
+[OpenZeppelin's Stellar library](https://github.com/OpenZeppelin/stellar-contracts) has been independently reviewed and is
 published on crates.io. Using it rather than hand-rolled admin logic removes both a maintenance
-burden and an audit surface:
+burden and a surface for independent review:
 
 ```toml
 [dependencies]
@@ -928,7 +929,7 @@ stellar-macros         = "0.7"   # #[only_role], #[when_not_paused], #[only_owne
 | roles | `DataKey::Admin` / `DataKey::Arbiter` + manual checks in each function | `stellar-access::access_control` with named roles and an admin role per role |
 | pause | `DataKey::Paused` + manual `if paused` | `stellar-contract-utils::pausable` + `#[when_not_paused]` on write paths only |
 | upgrade | `upgrade(hash)`, immediate | `#[derive(Upgradeable)]` + `UpgradeableInternal::_require_auth`, gated by `stellar-governance` timelock (§8.3) |
-| ownership transfer | bespoke two-step | `role_transfer` two-step, same guarantee, audited implementation |
+| ownership transfer | bespoke two-step | `role_transfer` two-step, same guarantee, independently reviewed implementation |
 | company account policies | none | `stellar-accounts` context rules and policies (§7.3) |
 
 **Two role planes, deliberately separate.** Collapsing them is the mistake that lets an issuer attest
@@ -958,7 +959,7 @@ Sizing: 60,131 of 131,072 bytes used today. The library adds roughly 8–15 KB; 
 Admin authority moves onto a Stellar account configured for 2-of-3, held by three separate parties on
 separate hardware. This needs **no contract code**: Soroban verifies an account address's
 authorisation against that account's own signers and **medium threshold**, so the multisig is a
-network-level property that our contract cannot get wrong and an auditor does not have to re-verify.
+network-level property that our contract cannot get wrong and an independent review does not have to re-verify.
 
 ```bash
 # three signers, weight 1 each; medium threshold 2 => any two must sign
@@ -1005,7 +1006,7 @@ impl VerifiedRegistry {
 
 Properties: the queued hash is public and readable by anyone before it can execute; the executed hash
 must equal the scheduled hash exactly; the delay is enforced against `env.ledger().timestamp()`; and
-`UpgradeScheduled` / `UpgradeCancelled` / `ContractUpgraded` give a complete public audit trail. The
+`UpgradeScheduled` / `UpgradeCancelled` / `ContractUpgraded` give a complete public record. The
 verifier UI surfaces a pending upgrade as a banner, so users learn about a code change **before** it
 lands, not after.
 
@@ -1108,8 +1109,8 @@ verified".
 
 **Selective disclosure** (BBS / SD-JWT-style) is deliberately staged after the base proof suite. The
 verifier use case that justifies it is concrete — a former employee proving role category and period
-without exposing identity documents or internal evidence — but shipping an unaudited disclosure
-scheme is worse than shipping none.
+without exposing identity documents or internal evidence — but shipping a disclosure
+scheme that has not had an independent review is worse than shipping none.
 
 **Published schemas:** Verified Person · Verified Organisation · Current Employee · Past Employee ·
 External Representative · Recruitment Mandate · General Representation Mandate. Each ships with its
@@ -1222,7 +1223,7 @@ Grant scope adds:
 
 A published Wasm hash proves two deployments are identical. It does not prove either matches the
 source — which is the question that actually matters for a registry claiming to be independently
-auditable. Grant scope closes that gap:
+verifiable. Grant scope closes that gap:
 
 - `stellar contract build` embeds the `contractmetav0` section (contract name, version, source repo,
   home domain, build image and toolchain);
@@ -1262,7 +1263,7 @@ rather than asserted, and it is a gate on the final milestone.
 | Threat | Control | Status |
 |---|---|---|
 | Scammer buys or receives a verified badge | no transfer entry point; recovery needs current controller **+** stored issuer **+** destination | LIVE |
-| Issuer fabricates a badge for a non-consenting subject | `accept_entity` requires the subject's own signature against a named terms hash; publicly auditable via `EntityProposed`/`EntityAccepted` | LIVE |
+| Issuer fabricates a badge for a non-consenting subject | `accept_entity` requires the subject's own signature against a named terms hash; publicly verifiable via `EntityProposed`/`EntityAccepted` | LIVE |
 | Admin key compromise rewrites history | per-badge stored `issuer` ≠ global admin; upgrade timelock + 2-of-3; public `pending_upgrade` | LIVE / BUILD |
 | Recruiter self-asserts authority | `confirmation` derived from signer; `SelfAsserted` never passes `is_authorised` | LIVE |
 | Stale affiliation presented as current | derived expiry at read time; linked-relationship liveness required | LIVE |
@@ -1293,26 +1294,49 @@ compromised device passkey with a full-scope signer can act as the holder until 
 
 This is the deliverable roadmap submitted to the Stellar Community Fund: three tranches, eight
 deliverables, $74,100 in total. The registry contract and the public verifier are already live on
-Stellar testnet and are not billed; the grant funds the work below. Dates assume the project starts
-on 1 March 2027.
+Stellar testnet and are not billed; the grant funds the work below.
 
 | Tranche | Deliverable | Date | Budget |
 |---|---|---|---|
-| 1 · MVP | D1 Company root of trust and wallet-connected issuer console | 26 March 2027 | $8,600 |
-| 1 · MVP | D2 Passkey accounts and sponsored Soroban transactions | 9 April 2027 | $8,100 |
-| 2 · Testnet | D1 Contract governance, registry indexer, public API, SDK and public metrics | 7 May 2027 | $11,400 |
-| 2 · Testnet | D2 Soroban TTL keeper and restoration service | 21 May 2027 | $6,300 |
-| 2 · Testnet | D3 Signed credential and commitment layer | 28 May 2027 | $7,700 |
-| 3 · Mainnet | D1 Production hardening, custody and operational readiness | 18 June 2027 | $10,200 |
-| 3 · Mainnet | D2 Open-source v1.0 and reproducible deployment | 25 June 2027 | $8,400 |
-| 3 · Mainnet | D3 Mainnet launch, Jobited issuance floor and user acceptance testing | 2 July 2027 | $13,400 |
+| 1 · MVP | D1 Company root of trust and wallet-connected issuer console | 29 December 2026 | $8,600 |
+| 1 · MVP | D2 Passkey accounts and sponsored Soroban transactions | 11 January 2027 | $8,100 |
+| 2 · Testnet | D1 Contract governance, registry indexer, public API, SDK and public metrics | 30 January 2027 | $11,400 |
+| 2 · Testnet | D2 Soroban TTL keeper and restoration service | 9 February 2027 | $6,300 |
+| 2 · Testnet | D3 Signed credential and commitment layer | 22 February 2027 | $7,700 |
+| 3 · Mainnet | D1 Production hardening, custody and operational readiness | 10 March 2027 | $10,200 |
+| 3 · Mainnet | D2 Open-source v1.0 and reproducible deployment | 24 March 2027 | $8,400 |
+| 3 · Mainnet | D3 Mainnet launch, Jobited issuance floor and user acceptance testing | 15 April 2027 | $13,400 |
 | | **Total** | | **$74,100** |
+
+### Business model and on-chain revenue · BUILD
+
+DoubleCheck is token-free and open source. Revenue is a small protocol fee that the contract collects
+and splits on-chain, so the split is public and cannot be changed silently.
+
+| Item | Design |
+|---|---|
+| Who pays | the organisation being verified, once at issuance and again at each renewal. Individuals, candidates and everyone who checks a badge pay nothing; reading and verifying stay free and wallet-free (§7.1). |
+| Fee | 2 USDC per issuance and 1 USDC per renewal (planned mainnet amounts) |
+| Split | 25% to the on-chain protocol treasury, 75% to the issuer that performed the verification |
+| Settlement asset | USDC through its Stellar Asset Contract (SAC); testnet uses the testnet USDC SAC |
+| Settlement | the issuance and renewal calls transfer the configured amounts to the treasury and issuer addresses in the same transaction, so a badge is never issued or renewed without its fee being settled |
+| Control | the fee parameter is settable only by the administrator role; any change is a public on-chain transaction |
+
+Fees apply only to issuance and renewal. Reads, withdrawal, revocation and suspension never carry a
+protocol fee, so that taking down a bad claim is never gated by payment (§4). The fee parameter is
+delivered in Tranche 2, Deliverable 1 (§13). Who funds sponsored writes for holders at scale remains
+open (§14, item 3).
 
 ### Tranche 1 (Deliverable Roadmap) — MVP · $16,700
 
 Context: the registry contract and the public verifier are live on Stellar testnet and are not
 billed. This tranche adds the company root of trust, the browser-based issuer console, passkey
 accounts and sponsored submission.
+
+**Distribution channels.** Issuer policy and control-proof procedure published in the repository and
+on the GitBook; the eight companies with a letter of intent (Peridot Finance, Payroutes, Wintrader,
+GuardianStack, Spreadless, USD8, Sumi Studio, CoConnect) invited to test the console on testnet;
+feedback collected on the project's Telegram group.
 
 #### Deliverable 1. Company root of trust and wallet-connected issuer console
 
@@ -1334,7 +1358,7 @@ simulates, signs, submits and confirms final ledger inclusion. The public verifi
 state through Soroban RPC and reflects withdrawal or expiry without a separate synchronisation
 transaction.
 
-**Estimated date of completion:** 26 March 2027 · **Budget:** $8,600
+**Estimated date of completion:** 29 December 2026 · **Budget:** $8,600
 
 #### Deliverable 2. Passkey accounts and sponsored Soroban transactions
 
@@ -1352,16 +1376,23 @@ authorisations and show that the relayer cannot change the authorised contract, 
 or invocation tree. Relayer refusal, rate-limit and subsidy-cap paths are covered in CI. The
 application reports success only after final ledger inclusion.
 
-**Estimated date of completion:** 9 April 2027 · **Budget:** $8,100
+**Estimated date of completion:** 11 January 2027 · **Budget:** $8,100
 
 ### Tranche 2 (Deliverable Roadmap) — Testnet · $25,400
+
+**Distribution channels.** Public API, TypeScript SDK and metrics page announced to the eight
+letter-of-intent companies and to Stellar wallet and explorer teams; credential schemas and test
+vectors published for third-party verifiers; onchainhires.com prepared to require a confirmed mandate
+per listing.
 
 #### Deliverable 1. Contract governance, registry indexer, public API, SDK and public metrics
 
 **Description.** Upgrade the testnet registry with OpenZeppelin stellar-contracts modules for
 role-based access control, pausing and upgradeability. Separate protocol administrator, arbiter,
 pauser and upgrade authorities from organisation-scoped permissions; sensitive upgrades require a
-2-of-3 Stellar account and emit a public upgrade event. Build a registry event indexer consuming
+2-of-3 Stellar account and emit a public upgrade event. Add a protocol fee parameter on issuance and
+renewal (planned at 2 USDC and 1 USDC on mainnet, 25% to the on-chain protocol treasury and 75% to
+the issuer), settable only by the administrator role. Build a registry event indexer consuming
 contract events through Stellar RPC with a persisted cursor and an append-only event log, a
 reconciler that compares projections with contract state and marks divergent records stale, a
 documented public API plus TypeScript SDK for entities, relationships, mandates and status history,
@@ -1372,14 +1403,15 @@ plan.
 **How to measure completion.** The upgraded contract is live on testnet with tagged source, contract
 address, WASM hash and upgrade transaction published; existing records remain readable. Automated
 tests demonstrate role separation, 2-of-3 approval for sensitive actions, rejection of unauthorised
-calls, emergency pause with withdrawal and revocation still working, and publication of upgrade
-events. From the bootstrap snapshot and the event log, the indexer rebuilds the same state as direct
+calls, emergency pause with withdrawal and revocation still working, publication of upgrade events,
+and that the fee parameter can only be changed by the administrator role while issuance and renewal
+transfer the configured amounts to the treasury and issuer addresses. From the bootstrap snapshot and the event log, the indexer rebuilds the same state as direct
 contract reads; restart and replay tests produce no gaps or duplicates; a deliberately modified
 projection is detected and marked stale. The API, SDK and metrics page are published, with indexed
 results distinguished from direct contract reads. Threat model and monitoring plan are published in
 the repository.
 
-**Estimated date of completion:** 7 May 2027 · **Budget:** $11,400
+**Estimated date of completion:** 30 January 2027 · **Budget:** $11,400
 
 #### Deliverable 2. Soroban TTL keeper and restoration service
 
@@ -1397,7 +1429,7 @@ restores it through the operator-funded path and verifies it again without a wal
 reader side. Tests cover interrupted runs, repeated execution and failed submissions. Measured
 per-entry rent and keepalive costs are published in the repository.
 
-**Estimated date of completion:** 21 May 2027 · **Budget:** $6,300
+**Estimated date of completion:** 9 February 2027 · **Budget:** $6,300
 
 #### Deliverable 3. Signed credential and commitment layer
 
@@ -1418,9 +1450,14 @@ and Soroban status as separate results. Inspection of newly written entries conf
 claim text or salt on-chain; historical entries are explicitly out of scope because they cannot be
 removed.
 
-**Estimated date of completion:** 28 May 2027 · **Budget:** $7,700
+**Estimated date of completion:** 22 February 2027 · **Budget:** $7,700
 
 ### Tranche 3 (Deliverable Roadmap) — Mainnet · $32,000
+
+**Distribution channels.** Mainnet launch announced with the v1.0 release; Jobited issues its first
+verified companies and mandates from its existing client base; onchainhires.com publishes
+mandate-gated listings; technical onboarding package sent to the eight letter-of-intent companies and
+to the first issuer candidates (agencies, foundations, coding schools) in Germany and APAC.
 
 #### Deliverable 1. Production hardening, custody and operational readiness
 
@@ -1441,7 +1478,7 @@ operational balances and low TTL headroom. Deployment configuration is version-c
 production secrets. All threat-model items rated high or above have a documented, tested mitigation.
 SECURITY.md is updated with the dated independent review milestone.
 
-**Estimated date of completion:** 18 June 2027 · **Budget:** $10,200
+**Estimated date of completion:** 10 March 2027 · **Budget:** $10,200
 
 #### Deliverable 2. Open-source v1.0 and reproducible deployment
 
@@ -1458,7 +1495,7 @@ a fresh testnet instance and complete the documented verification lifecycle with
 steps or credentials. Contract, API, SDK, credential and end-to-end test suites pass against that
 deployment in CI.
 
-**Estimated date of completion:** 25 June 2027 · **Budget:** $8,400
+**Estimated date of completion:** 24 March 2027 · **Budget:** $8,400
 
 #### Deliverable 3. Mainnet launch, Jobited issuance floor and user acceptance testing
 
@@ -1466,8 +1503,8 @@ deployment in CI.
 passkey onboarding, sponsored submission, issuer console, public verifier, indexer, TTL service,
 public API, SDK, credential service, embeddable badge and public metrics page. Jobited operates as
 the first production issuer under the published issuer policy and issues a committed floor from its
-existing client base: at least [TEAM: n] verified companies, [TEAM: n] confirmed relationships and
-[TEAM: n] mandates. A technical onboarding package is available for pilot organisations; their
+existing client base: at least 7 verified companies, 22 confirmed relationships and 5
+mandates. A technical onboarding package is available for pilot organisations; their
 participation is not a completion condition. Document production data-handling, retention, deletion,
 correction and dispute procedures for off-chain information.
 
@@ -1482,7 +1519,7 @@ the public metrics page, with the corresponding mainnet transactions linked. Use
 across issuer administration, passkey subject flows and wallet-free verification is documented and
 launch-blocking findings are resolved and regression-tested. This is the final project deliverable.
 
-**Estimated date of completion:** 2 July 2027 · **Budget:** $13,400
+**Estimated date of completion:** 15 April 2027 · **Budget:** $13,400
 
 ---
 
@@ -1522,7 +1559,6 @@ These are deliberately listed rather than papered over. Each is a decision, not 
 **Tooling** — [Scaffold Stellar](https://developers.stellar.org/docs/tools/scaffold-stellar) ·
 [Stellar Wallets Kit](https://stellarwalletskit.dev/) ·
 [Passkey Kit](https://github.com/stellar/passkey-kit) ·
-[Launchtube](https://github.com/stellar/launchtube) ·
 [Stellar Lab](https://lab.stellar.org/) ·
 [OpenZeppelin stellar-contracts](https://github.com/OpenZeppelin/stellar-contracts)
 
