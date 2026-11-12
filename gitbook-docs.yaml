@@ -1,0 +1,11 @@
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+site:
+  title: DoubleCheck
+  structure:
+    - type: space
+      key: doublecheck-docs
+      title: DoubleCheck docs
+      path: doublecheck
+      default: true
+      content:
+        directory: ./
