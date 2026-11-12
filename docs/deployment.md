@@ -15,7 +15,7 @@ future indexer/API is also separate and will require a continuously running host
 
 | Resource | Current state |
 |---|---|
-| Hosted site | <https://doublecheck-six.vercel.app> |
+| Hosted site | <https://doublecheck-lime.vercel.app> |
 | Public testnet contract | vNext at `CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP` |
 | Public testnet Wasm hash | `1ab20ff8c30b0f704b64dee4aed5d1dd111e5b24e33fb612ef9309aef5dc895a` |
 | Upgrade transaction | [`b0aaf6f…`](https://stellar.expert/explorer/testnet/tx/b0aaf6f31e942e619b393505f90f15d57c73404e2707bf688b5d3f56758b7940) |

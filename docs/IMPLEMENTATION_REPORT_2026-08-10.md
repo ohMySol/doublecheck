@@ -487,7 +487,7 @@ Post-upgrade smoke verification confirmed:
 | Main implementation commit | `e8c54a3acb7c598da7d70c2365f579aaa41f1953` |
 | Final runtime/config commit before this report refresh | `cc4a986719eb01415ca1356e86252865daba957f` |
 | GitHub CI | Passed — run `31429171093` |
-| Vercel production URL | `https://doublecheck-six.vercel.app` |
+| Vercel production URL | `https://doublecheck-lime.vercel.app` |
 | Vercel deployment | Passed for `cc4a986` |
 | Public routes | `/`, `/apply`, `/verify`, `/standard`, `/manage`, and `/badge/acme-robotics` returned HTTP 200 |
 | Browser render smoke | Application, standard, Acme entity, and live-badge content rendered in headless Chrome |

@@ -34,7 +34,7 @@ authorisation rule, and function signature.
 | Upgrade tx | [`b0aaf6f…`](https://stellar.expert/explorer/testnet/tx/b0aaf6f31e942e619b393505f90f15d57c73404e2707bf688b5d3f56758b7940) — in-place upgrade, 10 Aug 2026, 5 entities and 8 claims preserved |
 | Toolchain | Rust 1.96 · `soroban-sdk` 27.0.5 in the current build (29.x is the current stable line, matching protocol 29; the move is planned with the next contract version) · target `wasm32v1-none` · `stellar-cli` |
 | Contract tests | 59, deterministic, snapshot-backed |
-| Live app | <https://doublecheck-six.vercel.app> |
+| Live app | <https://doublecheck-lime.vercel.app> |
 | Source | <https://github.com/ohMySol/doublecheck> — [`SC/`](../SC/) contract, [`FE/`](../FE/) verifier |
 | Docs | <https://doublecheck.gitbook.io/doublecheck/> |
 

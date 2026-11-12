@@ -12,7 +12,7 @@ state, and demand assertions. Testnet fixtures are not users and deployment is n
 | Public contract | vNext Stellar testnet address `CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP` |
 | Public Wasm | 60,131 bytes; SHA-256 `1ab20ff8c30b0f704b64dee4aed5d1dd111e5b24e33fb612ef9309aef5dc895a` |
 | Public contract fixtures | 5 entities and 8 claims; demonstration data only |
-| Hosted frontend | <https://doublecheck-six.vercel.app> |
+| Hosted frontend | <https://doublecheck-lime.vercel.app> |
 | Public read model | wallet-free Soroban simulations from the browser |
 | Intake | application/report webhook bridge in repository source; requires private deployment configuration |
 | Audit | no independent production audit |
