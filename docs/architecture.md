@@ -290,7 +290,7 @@ invariant/smoke checks. Testnet fixtures remain demonstrations, not proof of ope
 
 ## Remaining limitations
 
-- no independent production audit or formal verification;
+- independent security review and formal verification are still to come;
 - no complete KYC/KYB provider, review queue, evidence vault, policy, or appeals operation;
 - no W3C proof-suite verification, selective-disclosure cryptography, or issuer key discovery;
 - no indexer/API, scalable search, browser extension, or status-history service;

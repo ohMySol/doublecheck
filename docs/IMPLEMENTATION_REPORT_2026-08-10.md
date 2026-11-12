@@ -1,4 +1,4 @@
-# DoubleCheck vNext implementation, audit, and deployment report
+# DoubleCheck vNext implementation, review, and deployment report
 
 **Date:** 10 August 2026
 
@@ -26,7 +26,7 @@ demonstration entities and eight claims were preserved. The TypeScript binding w
 the final live specification.
 
 This is a technically deployed testnet release, not a production verification service. Independent
-audit, real KYC/KYB operations, secure evidence storage, reviewer staffing, appeals, rate limiting,
+security review, real KYC/KYB operations, secure evidence storage, reviewer staffing, appeals, rate limiting,
 production key custody, indexer/API, and full credential-proof validation remain required.
 
 ## 2. Product model extracted from the plan
@@ -354,9 +354,9 @@ Route ordering keeps reserved product paths ahead of generic handles. Live badge
 Application/standards/404 routes do not require registry startup. Search degrades safely without a
 registry provider.
 
-## 6. Audits and important defects corrected
+## 6. Reviews and important defects corrected
 
-### Contract/security audit findings fixed
+### Contract/security review findings fixed
 
 - Recipient could receive active badge without consent.
 - Mutable global admin effectively controlled old badges after handover.
@@ -375,7 +375,7 @@ registry provider.
 - Simulated reads were incorrectly documented as durable TTL maintenance.
 - Keepalive initially missed strict pair indexes.
 
-### Frontend/runtime audit findings fixed
+### Frontend/runtime review findings fixed
 
 - Read client attempted to load nonexistent `GAAAA…` account before every simulation.
 - `public_display=false` relationships were rendered publicly.
@@ -396,7 +396,7 @@ registry provider.
 - Organization/claim wording elevated self-assertions to “confirmed.”
 - Live badge framing policy initially conflicted with global clickjacking protection.
 
-### Documentation/operations audit findings fixed
+### Documentation/operations review findings fixed
 
 - Replaced inaccurate EVM/NFT assumptions with Soroban behavior.
 - Documented testnet/source/binding compatibility explicitly.
@@ -558,7 +558,7 @@ verified from the public production URL.
 
 ### Required before mainnet
 
-- Independent Soroban/frontend security audit.
+- Independent Soroban/frontend security review.
 - Production multisig/HSM-grade admin and issuer custody.
 - Separate funded keeper identity and monitored scheduled execution.
 - Upgrade timelock/stronger governance decision.

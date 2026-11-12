@@ -17,7 +17,7 @@
 - Public verification-standard page explaining, in plain language, what a green result does and does not mean
 - Issuer-approved account recovery path for genuine lost-access cases
 - Safe record-maintenance process to keep long-lived demonstration records available
-- Full implementation, audit, and deployment report, in both Markdown and a branded PDF
+- Full implementation, review, and deployment report, in both Markdown and a branded PDF
 - Smoother page-entry animations across the product
 - Broader automated and adversarial testing
 

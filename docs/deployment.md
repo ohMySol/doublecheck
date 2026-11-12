@@ -26,7 +26,7 @@ future indexer/API is also separate and will require a continuously running host
 The existing address was upgraded in place on 10 August 2026. Post-upgrade smoke reads preserved all
 five entities, both counters, admin and arbiter; an uncached ABI read exposed the new onboarding,
 recovery, keepalive, and strict authorisation functions. This proves deployment compatibility, not
-production verification quality or audit completion.
+production verification quality or completion of the independent security review.
 
 ## Frontend and intake deployment
 
@@ -187,7 +187,7 @@ On the target network, verify at minimum:
 9. confirmed-pair capacity fails closed without evicting a live mandate; and
 10. verifier, live iframe, explorer, and wallet network checks read the released address.
 
-Do not label the release production-ready until independent audit findings and operational controls
+Do not label the release production-ready until the independent security review is complete and operational controls
 are resolved.
 
 ## TTL and archival operations
@@ -234,13 +234,13 @@ worker/VM and database.
 
 ## Mainnet gates
 
-- independent contract/frontend security audit and upgrade rehearsal;
+- independent contract/frontend security review and upgrade rehearsal;
 - multisig/HSM or equivalent admin custody, separation of arbiter and keeper, and recovery drills;
 - implemented KYC/KYB operations, evidence security, reviewer permissions, policies, and appeals;
 - privacy/legal review of public handles/hashes/free text and off-chain retention/erasure;
 - a real credential proof-suite/selective-disclosure decision;
 - indexer/API, production RPC, monitoring, backups, and signed keepalive/restore ownership;
 - complete controller/issuer transaction UX or a documented controlled operating process; and
-- incident response, disclosure contacts, release rollback/forward-fix plan, and audit sign-off.
+- incident response, disclosure contacts, release rollback/forward-fix plan, and security-review sign-off.
 
 See [`roadmap.md`](roadmap.md) and [`SECURITY.md`](../SECURITY.md).

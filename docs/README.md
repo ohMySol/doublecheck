@@ -22,8 +22,8 @@ making a claim about production readiness.
 | Release gates and remaining work | [Roadmap](roadmap.md) |
 | Vulnerability scope/private reporting | [Security policy](../SECURITY.md) |
 | Evidence of shipped milestones | [Traction](traction.md) |
-| Full vNext implementation/audit/deployment report | [Markdown](IMPLEMENTATION_REPORT_2026-08-10.md) · [PDF](IMPLEMENTATION_REPORT_2026-08-10.pdf) |
-| Visual summary of new features, improvements, and fixes | [Markdown](IMPLEMENTED_CHANGES_SUMMARY_2026-08-10.md) · [PDF](IMPLEMENTED_CHANGES_SUMMARY_2026-08-10.pdf) |
+| Full vNext implementation, review, and deployment report | [Report](IMPLEMENTATION_REPORT_2026-08-10.md) |
+| Visual summary of new features, improvements, and fixes | [Summary](IMPLEMENTED_CHANGES_SUMMARY_2026-08-10.md) |
 
 ## Sources of truth
 
@@ -51,7 +51,7 @@ older live contract enforces the same rule.
   comparison, and Freighter holder-write work; full issuer/arbiter operations are not complete.
 - The public testnet contract was upgraded in place and the binding regenerated from the live vNext
   specification; its preserved records remain demonstration fixtures.
-- No independent production security audit has been completed.
+- Independent security review is planned before mainnet.
 - Full KYC/KYB operations, policies/appeals, proof-suite/selective-disclosure cryptography,
   indexer/API, extension, and passkey fee sponsorship remain.
 

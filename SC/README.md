@@ -15,7 +15,7 @@ in [`docs/deployment.md`](../docs/deployment.md).
 | Public testnet | vNext at `CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP`, Wasm hash `1ab20ff8c30b0f704b64dee4aed5d1dd111e5b24e33fb612ef9309aef5dc895a` |
 | Frontend binding | Generated from the upgraded live vNext specification |
 
-The public testnet runs vNext, but the contract has not received an independent production audit and
+The public testnet runs vNext, but the contract has not yet had an independent security review and
 the demonstration records do not prove the quality of off-chain verification.
 
 ## Layout
