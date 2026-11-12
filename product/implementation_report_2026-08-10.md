@@ -26,7 +26,7 @@ demonstration entities and eight claims were preserved. The TypeScript binding w
 the final live specification.
 
 This is a technically deployed testnet release, not a production verification service. Independent
-security review, real KYC/KYB operations, secure evidence storage, reviewer staffing, appeals, rate limiting,
+review, real KYC/KYB operations, secure evidence storage, reviewer staffing, appeals, rate limiting,
 production key custody, indexer/API, and full credential-proof validation remain required.
 
 ## 2. Product model extracted from the plan
@@ -356,7 +356,7 @@ registry provider.
 
 ## 6. Reviews and important defects corrected
 
-### Contract/security review findings fixed
+### Contract review findings fixed
 
 - Recipient could receive active badge without consent.
 - Mutable global admin effectively controlled old badges after handover.
@@ -558,7 +558,7 @@ verified from the public production URL.
 
 ### Required before mainnet
 
-- Independent Soroban/frontend security review.
+- Independent Soroban/frontend review.
 - Production multisig/HSM-grade admin and issuer custody.
 - Separate funded keeper identity and monitored scheduled execution.
 - Upgrade timelock/stronger governance decision.

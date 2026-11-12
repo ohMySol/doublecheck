@@ -2,7 +2,7 @@
 
 ## Status
 
-**DoubleCheck has not yet had an independent security review.** The repository is
+**DoubleCheck has not yet had an independent review.** The repository is
 pre-production. The public Stellar testnet contract was upgraded to the reviewed vNext candidate on
 10 August 2026 and the frontend binding was regenerated from its live specification, but testnet
 deployment does not prove safe human verification operations. Do not use testnet records for
@@ -93,7 +93,7 @@ A bug that expands any of those powers or misattributes their outcome is in scop
 
 ## Known and accepted limitations
 
-Please check [`docs/roadmap.md`](docs/roadmap.md) before reporting these as new findings:
+Please check [`docs/roadmap.md`](product/roadmap.md) before reporting these as new findings:
 
 - the public vNext deployment remains testnet infrastructure with demonstration records and has not been independently
   reviewed;
@@ -121,4 +121,4 @@ verification built on top of it.
 Before mainnet, complete independent contract/frontend review, key-custody and upgrade drills,
 KYC/KYB/privacy and complaint/appeal operations, proof-suite decisions, scalable indexed reads,
 submitted TTL maintenance/restore, monitoring, incident response, and production wallet transaction
-UX. See [`docs/deployment.md`](docs/deployment.md#mainnet-gates).
+UX. See [`docs/deployment.md`](technical/deployment.md#mainnet-gates).

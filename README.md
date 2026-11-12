@@ -46,13 +46,13 @@ The repository and public Stellar testnet contract now run the **vNext interface
 
 The existing address was upgraded in place on 10 August 2026. Its 5 demonstration entities and 8 claims were preserved, and the checked-in TypeScript binding was regenerated from the upgraded live specification. This is still testnet, not a production release.
 
-| Resource               | Value                                                                                                                       |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Hosted explorer        | [https://doublecheck-lime.vercel.app](https://doublecheck-lime.vercel.app)                                                  |
-| vNext testnet contract | `CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP`                                                                  |
-| Wasm SHA-256           | `1ab20ff8c30b0f704b64dee4aed5d1dd111e5b24e33fb612ef9309aef5dc895a`                                                          |
-| Contract explorer      | [stellar.expert](https://stellar.expert/explorer/testnet/contract/CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP) |
-| Demonstration data     | 5 entities and 8 claims                                                                                                     |
+| Resource | Value |
+|---|---|
+| Hosted explorer | [doublecheck-lime.vercel.app](https://doublecheck-lime.vercel.app) |
+| vNext testnet contract | `CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP` |
+| Wasm SHA-256 | `1ab20ff8c30b0f704b64dee4aed5d1dd111e5b24e33fb612ef9309aef5dc895a` |
+| Contract explorer | [stellar.expert](https://stellar.expert/explorer/testnet/contract/CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP) |
+| Demonstration data | 5 entities and 8 claims |
 
 ### Documentation
 
@@ -69,16 +69,19 @@ The existing address was upgraded in place on 10 August 2026. Its 5 demonstratio
 
 ### Status
 
-Pre-production. Mainnet is blocked on full KYC/KYB operations, complaint and appeals policy, production key custody, credential proof/selective-disclosure design, operational indexing and TTL maintenance, and an independent security review. Browser extension, passkey account abstraction, fee sponsorship, and production write dashboards are not complete.
+Pre-production. Mainnet is blocked on full KYC/KYB operations, complaint and appeals policy,
+production key custody, credential proof/selective-disclosure design, operational indexing and TTL
+maintenance, and an independent review. Browser extension, passkey account abstraction,
+fee sponsorship, and production write dashboards are not complete.
 
 ### Maintainers
 
 DoubleCheck is built by Jobited. Core team of four.
 
-* **Luis Homann**, Founder and Ecosystem Lead. Runs Jobited's Web3 and blockchain recruiting; sources pilot companies, recruiters and hiring mandates; owns relationship and trust policy design and pilot coordination. [LinkedIn](https://www.linkedin.com/in/luis-homann/)
-* **Nuno David**, Full-Stack and Smart Contract Engineer. Rust and Solidity across EVM and Cosmos. At Escher Finance led refactors of a chain-abstracted liquid staking hub on Babylon (multimillion USD TVL) and designed a tokenized vault in CosmWasm. Open source contributor with merged PRs in Foundry, viem and revm. Expertise in zk-SNARKs, ranked top 200 on cryptohack.org. [GitHub](https://github.com/ndavd) · [LinkedIn](https://www.linkedin.com/in/ndav)
-* **Anton Holovchenko**, smart contract engineer with 3+ years of experience building DeFi protocols across Ethereum and EVM ecosystems, with a focus on lending, staking, and yield strategies. He has designed cross-chain lending systems, migrated tokens to LayerZero standards, and built staking and launchpool infrastructures with integrated reward mechanisms. His background also includes security auditing, oracle integrations, and strong testing practices, ensuring robust and scalable on-chain systems. [GitHub](https://github.com/ohMySol) · [LinkedIn](https://www.linkedin.com/in/anton-holovchenko/)
-* **Alexandre Hebert**, Head of APAC Growth and Partnerships. Connects top tech talent with fintech companies from Singapore. Scaled Local Expats Bali from 60 to 400+ members; co-owned and grew multi-location businesses in Canada. Deep experience in partnerships, sales operations and client onboarding. Alexandre will be responsible to help partners integrate DoubleCheck easily. [LinkedIn](https://www.linkedin.com/in/alexandrehebert-11549224)
+- **Luis Homann**, Founder and Ecosystem Lead. Runs Jobited's Web3 and blockchain recruiting; sources pilot companies, recruiters and hiring mandates; owns relationship and trust policy design and pilot coordination. [LinkedIn](https://www.linkedin.com/in/luis-homann/)
+- **Nuno David**, Full-Stack and Smart Contract Engineer. Rust and Solidity across EVM and Cosmos. At Escher Finance led refactors of a chain-abstracted liquid staking hub on Babylon (multimillion USD TVL) and designed a tokenized vault in CosmWasm. Open source contributor with merged PRs in Foundry, viem and revm. Expertise in zk-SNARKs, ranked top 200 on cryptohack.org. [GitHub](https://github.com/ndavd) · [LinkedIn](https://www.linkedin.com/in/ndav)
+- **Anton Holovchenko**, smart contract engineer with 3+ years of experience building DeFi protocols across Ethereum and EVM ecosystems, with a focus on lending, staking, and yield strategies. He has designed cross-chain lending systems, migrated tokens to LayerZero standards, and built staking and launchpool infrastructures with integrated reward mechanisms. His background also includes independent review, oracle integrations, and strong testing practices, ensuring robust and scalable on-chain systems. [GitHub](https://github.com/ohMySol) · [LinkedIn](https://www.linkedin.com/in/anton-holovchenko/)
+- **Alexandre Hebert**, Head of APAC Growth and Partnerships. Connects top tech talent with fintech companies from Singapore. Scaled Local Expats Bali from 60 to 400+ members; co-owned and grew multi-location businesses in Canada. Deep experience in partnerships, sales operations and client onboarding. Alexandre will be responsible to help partners integrate DoubleCheck easily. [LinkedIn](https://www.linkedin.com/in/alexandrehebert-11549224)
 
 ### Licence
 

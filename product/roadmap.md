@@ -61,7 +61,7 @@ Only reviewed outcomes are written on-chain by an authorised role.
 
 Before mainnet:
 
-- obtain an independent Soroban and frontend security review and resolve findings;
+- obtain an independent Soroban and frontend review and resolve findings;
 - put admin/upgrade authority under production multisig/HSM-grade custody; separate arbiter, reviewer,
   webhook, deployer, and funded keeper responsibilities;
 - rehearse compromise, lost-controller, wrong-proposal, pause, restore, and upgrade incidents;
@@ -113,8 +113,8 @@ Until those exist, controlled CLI or operator tooling must be documented and ind
 
 ## Accepted current limitations
 
-- public vNext contract and matching binding remain testnet infrastructure pending independent security review;
-- contract and application are awaiting their independent security review;
+- public vNext contract and matching binding remain testnet infrastructure pending independent review;
+- contract and application are awaiting their independent review;
 - on-chain status history exists only in events;
 - browser reads are linear and depend on a public RPC endpoint;
 - capped general indexes can omit stored claims from browser history discovery; strict confirmed

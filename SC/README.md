@@ -4,8 +4,8 @@ The Soroban registry records vetted organisations and people, their relationship
 mandates to act for an organisation. The contract derives expiry at read time and preserves who
 signed every claim.
 
-Design rationale is in [`docs/architecture.md`](../docs/architecture.md); production operations are
-in [`docs/deployment.md`](../docs/deployment.md).
+Design rationale is in [`docs/architecture.md`](../technical/architecture.md); production operations are
+in [`docs/deployment.md`](../technical/deployment.md).
 
 ## Version status
 
@@ -15,7 +15,7 @@ in [`docs/deployment.md`](../docs/deployment.md).
 | Public testnet | vNext at `CDY4WIUWUJWDW4AKPTYFXTRONQQVS52PS2ZYFU2S5HEMW2U7LM5KRHKP`, Wasm hash `1ab20ff8c30b0f704b64dee4aed5d1dd111e5b24e33fb612ef9309aef5dc895a` |
 | Frontend binding | Generated from the upgraded live vNext specification |
 
-The public testnet runs vNext, but the contract has not yet had an independent security review and
+The public testnet runs vNext, but the contract has not yet had an independent review and
 the demonstration records do not prove the quality of off-chain verification.
 
 ## Layout
@@ -236,7 +236,7 @@ after the upgrade.
 In either path, generate the TypeScript binding **from the deployed vNext specification after the
 transaction is final**, update the frontend contract id if it changed, rebuild, and run a smoke test.
 Do not generate from source and assume the live contract matches. See
-[`FE/README.md`](../FE/README.md) and [`docs/deployment.md`](../docs/deployment.md).
+[`FE/README.md`](../technical/fe.md) and [`docs/deployment.md`](../technical/deployment.md).
 
 The public testnet address runs vNext with 5 preserved demonstration entities and 8 claims. It proves
 deployment and ABI compatibility only, not production verification readiness.

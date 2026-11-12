@@ -192,7 +192,7 @@ when the ABI changed.
 ## Production gaps
 
 - deploy/upgrade vNext and regenerate the live binding;
-- independent security review and wallet transaction UX review;
+- independent review and wallet transaction UX review;
 - complete issuer/arbiter/controller-consent dashboards;
 - real KYC/KYB review/evidence/policy/appeals operations;
 - proof-suite and selective-disclosure credential verification;
@@ -200,5 +200,5 @@ when the ABI changed.
 - passkey recovery and fee sponsorship; and
 - monitored submitted keepalive/archive restore operations.
 
-See [`docs/deployment.md`](../docs/deployment.md) and
-[`docs/roadmap.md`](../docs/roadmap.md).
+See [`docs/deployment.md`](../technical/deployment.md) and
+[`docs/roadmap.md`](../product/roadmap.md).
